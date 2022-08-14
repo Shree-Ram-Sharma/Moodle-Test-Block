@@ -45,52 +45,55 @@ class block_test_block extends block_base {
     public function get_content() {
         global $CFG, $USER, $DB;
 
-        // login check...
+        // Login check...
         isloggedin();
         if ($this->content !== null) {
             return $this->content;
         }
 
-        // Current course details
-        $course = $this->page->course;
+        if ($CFG->block_test_block) {
+            // Current course details.
+            $course = $this->page->course;
 
-        $this->content = new stdClass;
+            $this->content = new stdClass;
 
-        // list of modules...
-        $modulelist = $DB->get_records_sql("SELECT cm.id, cm.instance, m.name as modname, cm.added AS creation_date
-        FROM {modules} m, {course_modules} cm WHERE cm.course = ? AND cm.module = m.id
-        AND cm.visible = 1 AND cm.deletioninprogress=0", array($course->id));
-        // list of completed modules...
-        $sql = "SELECT coursemoduleid FROM {course_modules_completion} WHERE completionstate = 1 AND userid = ? AND coursemoduleid in(
-            SELECT cm.id from {course_modules} cm WHERE cm.course = ? AND cm.visible = 1 AND cm.deletioninprogress=0)";
-        $completedmodules = $DB->get_records_sql($sql, array($USER->id, $course->id));
-        $completedmodules = array_keys($completedmodules);
+            // List of modules...
+            $modulelist = $DB->get_records_sql("SELECT cm.id, cm.instance, m.name as modname, cm.added AS creation_date
+            FROM {modules} m, {course_modules} cm WHERE cm.course = ? AND cm.module = m.id
+            AND cm.visible = 1 AND cm.deletioninprogress=0", array($course->id));
+            // List of completed modules...
+            $sql = "SELECT coursemoduleid FROM {course_modules_completion} WHERE completionstate = 1 AND userid = ?
+            AND coursemoduleid in(
+                SELECT cm.id from {course_modules} cm WHERE cm.course = ? AND cm.visible = 1 AND cm.deletioninprogress=0)";
+            $completedmodules = $DB->get_records_sql($sql, array($USER->id, $course->id));
+            $completedmodules = array_keys($completedmodules);
 
-        $outputstring = "";
-        foreach ($modulelist as $cm) {
-            $modrecord = $DB->get_record($cm->modname, array('id' => $cm->instance));
-            $launchurl = $CFG->wwwroot."/mod/".$cm->modname."/view.php?id=".$cm->id;
-            $finallink = "<a class='modulename' href='".$launchurl."'>".$modrecord->name."</a>";
-            $outputstring .= "<div>".$cm->id . " - " . $finallink . " - " . date('d-M-Y', $cm->creation_date);
-            // if completed add status
-            if (in_array($cm->id, $completedmodules)) {
-                $outputstring .= " - Completed";
+            $outputstring = "";
+            foreach ($modulelist as $cm) {
+                $modrecord = $DB->get_record($cm->modname, array('id' => $cm->instance));
+                $launchurl = $CFG->wwwroot."/mod/".$cm->modname."/view.php?id=".$cm->id;
+                $finallink = "<a class='modulename' href='".$launchurl."'>".$modrecord->name."</a>";
+                $outputstring .= "<div>".$cm->id . " - " . $finallink . " - " . date('d-M-Y', $cm->creation_date);
+                // If completed add status.
+                if (in_array($cm->id, $completedmodules)) {
+                    $outputstring .= " - Completed";
+                }
+                $outputstring .= "</div>";
             }
-            $outputstring .= "</div>";
         }
         $this->content->text = $outputstring;
         return $this->content;
     }
 
     /**
-     * Available on - course page only
+     * Available on - course page only.
      */
     public function applicable_formats() {
         return array('course' => true);
     }
 
     /**
-     * Serialize and store config data
+     * Serialize and store config data.
      */
     public function instance_config_save($data, $nolongerused = false) {
         global $DB;
@@ -101,7 +104,7 @@ class block_test_block extends block_base {
     }
 
     /**
-     * Replace the instance's configuration data with those currently in $this->config;
+     * Replace the instance's configuration data with those currently in $this->config.
      */
     public function instance_config_commit($nolongerused = false) {
         $this->instance_config_save($this->config);
