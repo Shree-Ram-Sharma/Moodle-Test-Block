@@ -26,4 +26,4 @@ $string['test_block:addinstance'] = 'Add a new Test Block block';
 $string['test_block:myaddinstance'] = 'Add a new Test Block to Course';
 $string['test_block'] = 'Moodle Test Block';
 $string['allowadditionalcssclasses'] = 'Moodle Test Block';
-$string['configallowadditionalcssclasses'] = 'Adds a configuration option to Moodle Test Block instances allowing additional CSS classes to be set.';
+$string['configallowadditionalcssclasses'] = 'Adds a configuration option to ON/OFF Moodle Test Block.';
